@@ -1,0 +1,9 @@
+.git
+*.py[co]
+dist
+venv
+build
+appveyor
+htmlcov
+__pycache__
+*.egg-info

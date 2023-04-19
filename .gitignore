@@ -1,11 +1,13 @@
 *.py[co]
 *~
+*.egg-info
 main.py
 dist/
 build/
 .idea/
 __pycache__
 .tox
+savReaderWriter/output*.sav
 junit-py*.xml
 cWriterow.cpython-*m.so
 MANIFEST
@@ -15,7 +17,7 @@ MANIFEST
 *.prof
 htmlcov
 coverage-*/
-.coverage
+.coverage*
 .Rhistory
 cover*
 _build

@@ -20,5 +20,5 @@ def test_missingValuesLowHigh():
     
 if __name__ == "__main__":
 
-    import nose
-    nose.main()
+    import nose2
+    nose2.main()

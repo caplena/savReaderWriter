@@ -13,8 +13,9 @@ from tempfile import gettempdir
 from os.path import join
 from time import strftime, strptime
 
-import nose
-from nose.tools import assert_raises
+import nose2
+from nose2.tools.decorators import with_setup, with_teardown
+from nose2.tools.such import helper
 
 from savReaderWriter import *
 
@@ -83,7 +84,7 @@ def tearDown():
 
 
 # ----------------
-@nose.with_setup(setUp)  #, tearDown)
+@with_setup(setUp)  #, tearDown)
 def test_date_values():
     data = SavReader(savFileName)
     with data:
@@ -92,7 +93,8 @@ def test_date_values():
         for desired, actual in zip(desired_record, actual_record):
             yield compare_value, desired, actual
 
-@nose.with_setup(setUp, tearDown)
+@with_setup(setUp)
+@with_teardown(tearDown)
 def test_dates_recodeSysmisTo():
     """Test if recodeSysmisTo arg recodes missing date value"""
     data = SavReader(savFileName, recodeSysmisTo=999)
@@ -149,7 +151,7 @@ def test_fractional_time():
 def test_fractional_datetime_wrong():
     savFileName = join(gettempdir(), "test_dates_issue54_4.sav")
     args = (savFileName, [b'datetime'], {b'datetime': 0})
-    with assert_raises(ValueError) as error:
+    with helper.assertRaises(ValueError) as error:
         with SavWriter(*args, formats={b'datetime': b"datime17.1_WRONG"}) as writer:
             before = [writer.spssDateTime(b"1952-02-03", "%Y-%m-%d")]
             writer.writerow(before)
@@ -157,5 +159,5 @@ def test_fractional_datetime_wrong():
 
 
 if __name__ == "__main__":
-    nose.main()
+    nose2.main()
 

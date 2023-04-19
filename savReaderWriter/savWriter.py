@@ -5,7 +5,7 @@ from ctypes import *
 import os
 import time
 import locale
-from collections import Iterable
+from collections.abc import Iterable
 
 try:
     pandasOK = True
@@ -414,7 +414,7 @@ class SavWriter(Header):
             for i in xrange(len(records)):
                 self.writerow( records[i].tolist() )
         elif pandasOK and isinstance(records, pd.DataFrame):
-            is_string = records.dtypes == np.object
+            is_string = records.dtypes == object
             is_nan_string = is_string & pd.isnull(records)
             records = records.where(~is_nan_string, b'')
             records = records.fillna(self.sysmis)

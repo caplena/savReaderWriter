@@ -12,8 +12,9 @@ from collections import namedtuple
 from unittest.case import SkipTest
 from io import StringIO
 
-import nose
-from nose.tools import with_setup, assert_raises
+import nose2
+from nose2.tools.decorators import with_setup, with_teardown
+from nose2.tools.such import helper
 
 try:
     pandasOK = True
@@ -46,7 +47,8 @@ def tearDown():
         if re.match(r"output_*\.sav", item):
             os.remove(item)
  
-@with_setup(setUp, tearDown)
+@with_setup(setUp)
+@with_teardown(tearDown)
 def test_writerows_numpy():
     if skip:
         raise SkipTest
@@ -132,22 +134,25 @@ def test_writerows_erroneous_flat_n():
     records = [0, 1]  # wrong!,
     savFileName = "output_error1.sav"
     with srw.SavWriter(savFileName, *args) as writer:
-        assert_raises(TypeError, writer.writerows, records)
+        with helper.assertRaises(TypeError):
+            writer.writerows(records)
 
 def test_writerows_erroneous_flat_s():
     records = ["a", "b"]  # wrong!
     string_args = ["v1", "v2"], dict(v1=1, v2=1)
     savFileName = "output_error2.sav"
     with srw.SavWriter(savFileName, *string_args) as writer:
-        assert_raises(TypeError, writer.writerows, records)
+        with helper.assertRaises(TypeError):
+            writer.writerows(records)
 
 def test_writerows_erroneous_flat_empty():
     records = []  # wrong!
     string_args = ["v1", "v2"], dict(v1=1, v2=1)
     savFileName = "output_error3.sav"
     with srw.SavWriter(savFileName, *string_args) as writer:
-        assert_raises(ValueError, writer.writerows, records)
+        with helper.assertRaises(ValueError):
+            writer.writerows(records)
         
 if __name__ == "__main__":
 
-    nose.main()
+    nose2.main()

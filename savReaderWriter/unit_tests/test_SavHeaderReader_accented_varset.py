@@ -7,8 +7,6 @@ from os.path import join
 from os import remove
 from tempfile import gettempdir
 
-import nose
-
 import savReaderWriter as srw
 
 varNames = [b'salbegin', b'salary']
@@ -43,4 +41,5 @@ def test_accented_varSet_unicode_mode():
 
 if __name__ == "__main__":
     
-    nose.main()    
+    import nose2
+    nose2.main()    
