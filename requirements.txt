@@ -1,2 +1,0 @@
--r optional-requirements.txt
--r dev-requirements.txt
