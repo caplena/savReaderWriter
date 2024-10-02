@@ -37,7 +37,7 @@ package_data = {'savReaderWriter': ['spssio/include/*.*',
                                     'documentation/*.*',
                                     'unit_tests/*.*',
                                     'test_data/*.*',
-                                    'README','VERSION',
+                                    'README.md',
                                     'COPYRIGHT']}
 
 ## *installing* the package: install only platform-relevant libraries
@@ -87,7 +87,7 @@ setup(name='savReaderWriter',
       maintainer='Albert-Jan Roskam',
       maintainer_email=email,
       license='MIT',
-      long_description=read('README'),
+      long_description=read('README.md'),
       zip_safe=False,
       platforms=['Windows', 'MacOS', 'POSIX'],
       url='https://bitbucket.org/fomcl/savreaderwriter',
