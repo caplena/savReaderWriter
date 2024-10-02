@@ -21,4 +21,5 @@ cover*
 _build
 _static
 VERSION
-
+*.egg-info
+savReaderWriter/output*.sav
