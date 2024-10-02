@@ -9,12 +9,13 @@ import unittest
 import locale
 from pprint import pprint
 import savReaderWriter as sav
+import pytest
 
 """
 Metadata roundtrip in unicode mode, see issue #32
 
-Previously **metadata in unicode mode could not be 
-consumed by SavWriter as they were ustrings. 
+Previously **metadata in unicode mode could not be
+consumed by SavWriter as they were ustrings.
 ioUtf8=UNICODE_BMODE can be used when unicode mode
 should return byte strings.
 """
@@ -22,8 +23,8 @@ should return byte strings.
 locale.setlocale(locale.LC_CTYPE, "")
 currLocale = locale.setlocale(locale.LC_CTYPE)
 
-# Demonstrates use of ioUtf8=UNICODE_BMODE, or ioUtf8=2. 
-# This is regular unicode mode (ioUtf8=UNICODE_BMODE, or ioUtf8=1, 
+# Demonstrates use of ioUtf8=UNICODE_BMODE, or ioUtf8=2.
+# This is regular unicode mode (ioUtf8=UNICODE_BMODE, or ioUtf8=1,
 # or ioUtf8=True), but data will be returned as bytes.
 in_savFileName = "test_data/metadata_copy_test.sav"
 is_windows = sys.platform.startswith("win")
@@ -31,8 +32,11 @@ ioLocale = "german" if is_windows else "de_DE.cp1252"
 b_settings = dict(ioUtf8=sav.UNICODE_BMODE, ioLocale=ioLocale)
 
 # read SPSS file data
-with sav.SavReader(in_savFileName, rawMode=True, **b_settings) as data:
-    in_records = data.all(False)
+try:
+    with sav.SavReader(in_savFileName, rawMode=True, **b_settings) as data:
+        in_records = data.all(False)
+except locale.Error:
+    pytest.skip(f"locale {ioLocale} is not supported.", allow_module_level=True)
 
 # read SPSS file metadata
 with sav.SavHeaderReader(in_savFileName, **b_settings) as header:
@@ -71,7 +75,7 @@ class Test_MetadataRoundTrip(unittest.TestCase):
         self.assertEqual("utf_8", out_encoding)
         self.assertEqual(in_metadata, out_metadata)
         # check if the locale is reset
-        self.assertEqual(locale.setlocale(locale.LC_CTYPE), currLocale) 
+        self.assertEqual(locale.setlocale(locale.LC_CTYPE), currLocale)
 
 if __name__ == "__main__":
     unittest.main()

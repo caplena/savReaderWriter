@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Q: "variable names with non-ASCII characters are returned as v1, v2, v3, etc"
-# A: Assuming the file was created in codepage mode (default in SPSS until 
-#    very recently), setting ioLocale to the proper (OS-dependent) locale 
+# A: Assuming the file was created in codepage mode (default in SPSS until
+#    very recently), setting ioLocale to the proper (OS-dependent) locale
 #    specification should do the trick. Note that the I/O has its own locale:
 #    the locale of the host system is not affected. I had to generate a German
 #    locale with the (Windows) codepage 1252 on my Linux machine first
@@ -15,6 +15,7 @@
 import unittest
 import sys
 import locale
+import pytest
 
 from savReaderWriter import *
 
@@ -38,10 +39,13 @@ class test_SavHeaderReader_ioLocale(unittest.TestCase):
         and encoding of host locale incompatible, e.g. a .sav file that was
         created under Windows using cp1252 encoding is accessed under Linux
         using utf-8 encoding"""
-        with SavHeaderReader(self.savFileName, 
-                             ioLocale=self.ioLocale) as header:
-            self.assertEqual(header.varNames, self.expected)
-            self.assertTrue(header.isCompatibleEncoding())
+        try:
+            with SavHeaderReader(self.savFileName,
+                                ioLocale=self.ioLocale) as header:
+                self.assertEqual(header.varNames, self.expected)
+                self.assertTrue(header.isCompatibleEncoding())
+        except locale.Error:
+            pytest.skip(f"locale {self.ioLocale} is not supported.")
 
     def test_locale_incorrect(self):
         """Host locale is incompatible with file encoding; ioLocale not
