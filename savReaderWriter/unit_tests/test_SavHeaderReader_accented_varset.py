@@ -7,8 +7,6 @@ from os.path import join
 from os import remove
 from tempfile import gettempdir
 
-import nose
-
 import savReaderWriter as srw
 
 varNames = [b'salbegin', b'salary']
@@ -39,8 +37,3 @@ def test_accented_varSet_unicode_mode():
     desired = {u'\xfcberhaupt': [u'salbegin', u'salary']}
     remove(kwargs["savFileName"])
     assert actual == desired, actual
-
-
-if __name__ == "__main__":
-    
-    nose.main()    

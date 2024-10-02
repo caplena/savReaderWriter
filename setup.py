@@ -49,11 +49,11 @@ package_data = {'savReaderWriter': ['spssio/include/*.*',
                                     'documentation/*.*',
                                     'unit_tests/*.*',
                                     'test_data/*.*',
-                                    'README','VERSION', 
+                                    'README','VERSION',
                                     'COPYRIGHT']}
 
 ## *installing* the package: install only platform-relevant libraries
-if is_install_mode:             
+if is_install_mode:
     if pf.startswith("win") and is_32bit:
         package_data['savReaderWriter'].append('spssio/win32/*.*')
     elif pf.startswith("win"):
@@ -77,7 +77,7 @@ if is_install_mode:
         raise EnvironmentError(msg)
 
 ## *building* the package: include all the libraries
-else: 
+else:
     package_data['savReaderWriter'].extend(['spssio/win32/*.*',
                                             'spssio/win64/*.*',
                                             'spssio/lin32/*.*',
@@ -122,9 +122,10 @@ setup(name='savReaderWriter',
                    'Programming Language :: Python :: 2',
                    'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.3', 
-                   'Programming Language :: Python :: 3.4', 
-                   'Programming Language :: Python :: 3.5', 
+                   'Programming Language :: Python :: 3.3',
+                   'Programming Language :: Python :: 3.4',
+                   'Programming Language :: Python :: 3.5',
+                   'Programming Language :: Python :: 3.7',
                    'Programming Language :: Cython',
                    'Programming Language :: Python :: Implementation :: CPython',
                    'Programming Language :: Python :: Implementation :: PyPy',

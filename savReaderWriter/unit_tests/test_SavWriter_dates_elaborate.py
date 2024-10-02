@@ -12,9 +12,7 @@ import locale
 from tempfile import gettempdir
 from os.path import join
 from time import strftime, strptime
-
-import nose
-from nose.tools import assert_raises
+import pytest
 
 from savReaderWriter import *
 
@@ -50,10 +48,12 @@ desired_records = \
 # FORMATS x (DTIME14).
 # will display as 10 12:03:00
 
-savFileName = join(gettempdir(), "test_dates.sav")
 
-def setUp():
+
+@pytest.fixture
+def savFileName(tmp_path):
     """create a test file"""
+    filepath = str(tmp_path / "test_dates.sav")
     varNames = [b'var_datetime', b'var_wkyr', b'var_date', b'var_qyr', b'var_edate',
                 b'var_sdate', b'var_dtime', b'var_jdate', b'var_month', b'var_moyr',
                 b'var_time', b'var_adate', b'var_wkday']
@@ -67,7 +67,7 @@ def setUp():
                [b'' for v in varNames],
                [None for v in varNames]]
 
-    kwargs = dict(savFileName=savFileName, varNames=varNames,
+    kwargs = dict(savFileName=filepath, varNames=varNames,
                   varTypes=varTypes, formats=formats)
     with SavWriter(**kwargs) as writer:
         for i, record in enumerate(records):
@@ -75,16 +75,10 @@ def setUp():
                 record[pos] = writer.spssDateTime(record[pos], "%Y-%m-%d")
             writer.writerow(record)
 
-def tearDown():
-    try:
-        os.remove(savFileName)
-    except:
-        pass
+    yield filepath
 
 
-# ----------------
-@nose.with_setup(setUp)  #, tearDown)
-def test_date_values():
+def test_date_values(savFileName):
     data = SavReader(savFileName)
     with data:
         actual_records = data.all()
@@ -92,8 +86,8 @@ def test_date_values():
         for desired, actual in zip(desired_record, actual_record):
             yield compare_value, desired, actual
 
-@nose.with_setup(setUp, tearDown)
-def test_dates_recodeSysmisTo():
+
+def test_dates_recodeSysmisTo(savFileName):
     """Test if recodeSysmisTo arg recodes missing date value"""
     data = SavReader(savFileName, recodeSysmisTo=999)
     with data:
@@ -108,7 +102,7 @@ def compare_value(desired, actual):
 
 
 # ----------------
-# issue #54 fractional datetimes trigger error which must 
+# issue #54 fractional datetimes trigger error which must
 # be ignored, e.g. DATETIME11.1
 def test_fractional_datetime():
     savFileName = join(gettempdir(), "test_dates_issue54_1.sav")
@@ -144,18 +138,13 @@ def test_fractional_time():
     assert before == after, "before: %s | after: %s" % (before, after)
     with SavReader(savFileName) as reader:
         after = reader.all(False)[0]
-    assert after == [b'23:59:01.000000'], after 
+    assert after == [b'23:59:01.000000'], after
 
 def test_fractional_datetime_wrong():
     savFileName = join(gettempdir(), "test_dates_issue54_4.sav")
     args = (savFileName, [b'datetime'], {b'datetime': 0})
-    with assert_raises(ValueError) as error:
+    with pytest.raises(ValueError) as error:
         with SavWriter(*args, formats={b'datetime': b"datime17.1_WRONG"}) as writer:
             before = [writer.spssDateTime(b"1952-02-03", "%Y-%m-%d")]
             writer.writerow(before)
-    assert "Unknown format" in str(error.exception), str(error.exception)
-
-
-if __name__ == "__main__":
-    nose.main()
-
+        assert "Unknown format" in str(error.exception), str(error.exception)
