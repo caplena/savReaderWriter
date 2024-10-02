@@ -38,7 +38,7 @@ package_data = {'savReaderWriter': ['spssio/include/*.*',
                                     'unit_tests/*.*',
                                     'test_data/*.*',
                                     'README.md',
-                                    'COPYRIGHT']}
+                                    'LICENSE.txt']}
 
 ## *installing* the package: install only platform-relevant libraries
 if is_install_mode:
