@@ -15,7 +15,6 @@ segfaults = False
 
 import os
 import sys
-from ._version import get_versions
 
 try:
     import numpy
@@ -41,9 +40,7 @@ elif savrw_use_cWriterow in ("1", "on", "true"):
 
 # author and version info, for e.g. use in fileLabel
 __author__ = "Albert-Jan Roskam" + " " + "@".join(["fomcl", "yahoo.com"])
-__version__ = version = get_versions()["version"].split("-")[0]
-#__version__ = version = "3.4.2"
-del get_versions
+__version__ = version = "3.4.2"
 
 
 # some constants
@@ -113,11 +110,11 @@ if sys.version_info[0] > 2:
     usupportedDates = {k.decode("utf-8"): v for k, v in supportedDates.items()}
     supportedDates.update(usupportedDates)
     del usupportedDates
-    
 
-QUARTERS = {b'01': b'1', b'02': b'1', b'03': b'1', 
+
+QUARTERS = {b'01': b'1', b'02': b'1', b'03': b'1',
             b'04': b'2', b'05': b'2', b'06': b'2',
-            b'07': b'3', b'08': b'3', b'09': b'3', 
+            b'07': b'3', b'08': b'3', b'09': b'3',
             b'10': b'4', b'11': b'4', b'12': b'4'}
 
 userMissingValues = {
