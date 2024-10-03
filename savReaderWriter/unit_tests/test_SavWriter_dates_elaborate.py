@@ -16,15 +16,12 @@ import pytest
 
 from savReaderWriter import *
 
-if sys.version_info[0] > 2:
-    bytes = functools.partial(bytes, encoding='utf-8')
-
 locale.setlocale(locale.LC_ALL, "")
 
 
 # ----------------
 # make sure the test passes in other locales too
-stamp  = lambda v, fmt: bytes(strftime(fmt, strptime(v, '%Y-%m-%d')))
+stamp  = lambda v, fmt: strftime(fmt, strptime(v, '%Y-%m-%d')).encode()
 wed1, august = stamp('2010-08-11', '%A'), stamp('2010-08-11', '%B')
 wed2, january = stamp('1910-01-12', '%A'), stamp('1910-01-12', '%B')
 desired_records = \

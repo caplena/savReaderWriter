@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage',
               'sphinx.ext.viewcode', 'sphinxcontrib.exceltable',
               'numpydoc']  # 'sphinx.ext.autosummary']
 
@@ -46,8 +46,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'savReaderWriter'
-copyright = u'2013, Albert-Jan Roskam'
+project = 'savReaderWriter'
+copyright = '2013, Albert-Jan Roskam'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -189,8 +189,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'savReaderWriter.tex', u'savReaderWriter Documentation',
-   u'Albert-Jan Roskam', 'manual'),
+  ('index', 'savReaderWriter.tex', 'savReaderWriter Documentation',
+   'Albert-Jan Roskam', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -219,8 +219,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'savreaderwriter', u'savReaderWriter Documentation',
-     [u'Albert-Jan Roskam'], 1)
+    ('index', 'savreaderwriter', 'savReaderWriter Documentation',
+     ['Albert-Jan Roskam'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -233,8 +233,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'savReaderWriter', u'savReaderWriter Documentation',
-   u'Albert-Jan Roskam', 'savReaderWriter', 'One line description of project.',
+  ('index', 'savReaderWriter', 'savReaderWriter Documentation',
+   'Albert-Jan Roskam', 'savReaderWriter', 'One line description of project.',
    'Miscellaneous'),
 ]
 

@@ -142,7 +142,7 @@ prevexp -- 0
 salary -- 0
 salbegin -- 0"""
 
-# This test passes the second time it is run. 
+# This test passes the second time it is run.
 class test_SavWriter_copy_metadata(unittest.TestCase):
 
     def setUp(self):
@@ -151,7 +151,6 @@ class test_SavWriter_copy_metadata(unittest.TestCase):
         self.savFileName1 = os.path.join(tempfile.gettempdir(), "test1.sav")
         self.savFileName2 = os.path.join(tempfile.gettempdir(), "test2.sav")
 
-    #@unittest.skipIf(sys.version_info[0] > 2, "keywords must be string")
     @unittest.skip("Gives error 'Permission denied: '/tmp/test1.sav'")
     def test_SavWriter_copy_meta_dict(self):
         """Copy header info from one file to another (Method #1)"""
@@ -176,7 +175,7 @@ class test_SavWriter_copy_metadata(unittest.TestCase):
         ## Uses <refSavFileName> as a donor file to initialize the header
         ## This will also copy DATE/TREND info, which is not copied using Method #1
         data = SavReader(self.savFileName, rawMode=True)
-        with data: 
+        with data:
             varNames, varTypes = data.getSavFileInfo()[2:4]
             records = data.all()
         with SavWriter(self.savFileName2, varNames, varTypes,
@@ -200,7 +199,7 @@ class test_SavWriter_copy_metadata(unittest.TestCase):
         records_expected = \
         [[b'id', b'gender', b'bdate', b'educ', b'jobcat',b'salary',
           b'salbegin', b'jobtime', b'prevexp', b'minority'],
-         [1.0, b'm', b'1952-02-03', 15.0, 3.0, 
+         [1.0, b'm', b'1952-02-03', 15.0, 3.0,
           57000.0, 27000.0, 98.0, 144.0, 0.0],
          [2.0, b'm', b'1958-05-23', 16.0, 1.0,
           40200.0, 18750.0, 98.0, 36.0, 0.0],

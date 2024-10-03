@@ -13,20 +13,19 @@ from savReaderWriter import *
 from header import *
 from helpers import *
 
-@rich_comparison
-@implements_to_string
+
 class SavReader(Header):
     """ Read SPSS system files (.sav, .zsav)
 
     Parameters
-    ---------- 
+    ----------
     savFileName : str
         the file name of the spss data file
     returnHeader : bool, default False
         indicates whether the first record should be a list of variable names
     recodeSysmisTo: (value), default None
-        indicates to which value SPSS missing values (`$sysmis`) should be 
-        recoded. Any value below 10 ** -10 is returned as None 
+        indicates to which value SPSS missing values (`$sysmis`) should be
+        recoded. Any value below 10 ** -10 is returned as None
     verbose : bool, default False
         indicates whether information about the spss data file (e.g., number
         of cases, variable names, file size) should be printed on the screen.
@@ -40,7 +39,7 @@ class SavReader(Header):
     rawMode : bool, default False
         indicates whether values should get SPSS-style formatting, and whether
         date variables (if present) should be converted into ISO-dates. If set
-        to ``True`` the program does not format any values, which increases 
+        to ``True`` the program does not format any values, which increases
         processing speed. In particular ``rawMode=True`` implies that:
 
         * SPSS datetimes will not be converted into ISO8601 dates
@@ -49,15 +48,15 @@ class SavReader(Header):
         * String values will be ceiled multiples of 8 bytes
         See also :ref:`formats` and :ref:`dateformats`
     ioUtf8 : bool, int, default False
-        indicates the mode in which text communicated to or from the I/O 
-        Module will be. 
+        indicates the mode in which text communicated to or from the I/O
+        Module will be.
 
         * `codepage mode`: ``ioUtf8=CODEPAGE_MODE``, or ``ioUtf8=0``, or
           ``ioUtf8=False``. Use the current ioLocale setting to determine the
           encoding for reading and writing data. Cf. `SET UNICODE=OFF`.
         * `standard unicode mode`: ``ioUtf8=UNICODE_UMODE``, or ``ioUtf8=1``,
-          or ``ioUtf8=True``. Use Unicode encoding (UTF-8) for reading and 
-          writing data. Data are returned as ``unicode`` strings. 
+          or ``ioUtf8=True``. Use Unicode encoding (UTF-8) for reading and
+          writing data. Data are returned as ``unicode`` strings.
           Cf. `SET UNICODE=ON`.
         * `bytes unicode mode`: ``ioUtf8=UNICODE_BMODE``, or ``ioUtf8=2``.
           Like standard unicode mode, but data are returned as ``byte``
@@ -70,10 +69,10 @@ class SavReader(Header):
 
     ioLocale : str or None, default None
         indicates the locale of the I/O module. Cf. `SET LOCALE` (default
-        = ``None``, which corresponds to 
-        ``locale.setlocale(locale.LC_CTYPE)``, for example: 
+        = ``None``, which corresponds to
+        ``locale.setlocale(locale.LC_CTYPE)``, for example:
         ``en_US.UTF-8`` (Unix) or ``english`` (Windows).
-        See also under :py:meth:`savReaderWriter.Generic.ioLocale`. 
+        See also under :py:meth:`savReaderWriter.Generic.ioLocale`.
 
     Examples
     --------
@@ -86,6 +85,24 @@ class SavReader(Header):
             for line in reader:
                 process(line)
     """
+
+    def __eq__(self, other):
+        return self.__cmp__(other) == 0
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __le__(self, other):
+        return self.__cmp__(other) in (0, -1)
+
+    def __lt__(self, other):
+        return self.__cmp__(other) == -1
+
+    def __ge__(self, other):
+        return self.__eq__(other) and not self.__lt__(other)
+
+    def __gt__(self, other):
+        return not self.__eq__(other) and not self.__lt__(other)
 
     def __init__(self, savFileName, returnHeader=False, recodeSysmisTo=None,
                  verbose=False, selectVars=None, idVar=None, rawMode=False,
@@ -130,7 +147,7 @@ class SavReader(Header):
         .. warning::
 
             Always ensure the the .sav file is properly closed, either by
-            using a context manager (``with`` statement) or by using 
+            using a context manager (``with`` statement) or by using
             ``close()``"""
         if type is not None:
             pass  # Exception occurred
@@ -151,7 +168,6 @@ class SavReader(Header):
         file. For example: len(SavReader(savFileName))"""
         return self.nCases
 
-    # Python 3: see @rich_comparison class decorator
     def __cmp__(self, other):
         """ This function implements behavior for all of the comparison
         operators so comparisons can be made between SavReader instances,
@@ -171,19 +187,19 @@ class SavReader(Header):
         is hashable."""
         return id(self)
 
-    def __str__(self):
+    def __bytes__(self):
         """This function returns a conscise file report of the spss data file
         For example::
             data = SavReader(savFileName)
-            print(str(data))  # Python 3: bytes(data)
+            print(bytes(data))
             data.close()"""
-        return self.__unicode__().encode(self.encoding)
+        return self.__str__().encode(self.encoding)
 
-    def __unicode__(self):
+    def __str__(self):
         """This function returns a conscise file report of the spss data file.
         For example::
             data = SavReader(savFileName)
-            print(unicode(data))  # Python 3: str(data)
+            print(str(data))
             data.close()"""
         return self.getFileReport()
 
@@ -213,7 +229,7 @@ class SavReader(Header):
         """Helper function for formatValues function. Determines whether
         iterating over each individual value is really needed"""
         hasDates = set(self.bareformats.values()) & set(supportedDates)
-        hasNfmt = set([b"N", u"N"]) & set(self.bareformats.values())
+        hasNfmt = set([b"N", "N"]) & set(self.bareformats.values())
         hasStrings = any(self.varTypes.values())
         #hasRecodeSysmis = self.recodeSysmisTo is not None
         return not any([hasDates, hasNfmt, hasStrings, self.ioUtf8_])
@@ -223,7 +239,7 @@ class SavReader(Header):
         """This function formats date fields to ISO dates (yyyy-mm-dd), plus
         some other date/time formats. The SPSS N format is formatted to a
         character value with leading zeroes. System missing values are recoded
-        to <recodeSysmisTo>, which defaults to `None`. If rawMode==True, 
+        to <recodeSysmisTo>, which defaults to `None`. If rawMode==True,
         this function does nothing"""
         sysmis = self.sysmis
         if self.rawMode:
@@ -242,17 +258,17 @@ class SavReader(Header):
                     if value <= sysmis:
                         record[i] = self.recodeSysmisTo
                     # format N-type values (=numerical with leading zeroes)
-                    if bareformat_ in (b"N", u"N"):
+                    if bareformat_ in (b"N", "N"):
                         #record[i] = str(value).zfill(varWid)
                         nfmt_value = "%%0%dd" % varWid % value  #15 x faster (zfill)
-                        nfmt_value = nfmt_value if self.ioUtf8 == 1 else bytez(nfmt_value)
+                        nfmt_value = nfmt_value if self.ioUtf8 == 1 else nfmt_value.encode(self.encoding)
                         record[i] = nfmt_value  #15 x faster (zfill)
                     # convert SPSS dates to ISO dates
                     elif bareformat_ in supportedDates:
                         fmt = supportedDates[bareformat_]
                         args = (value, fmt, self.recodeSysmisTo)
                         record[i] = self.spss2strDate(*args)
-                        if bareformat_ in (b"QYR", u"QYR") and record[i]:
+                        if bareformat_ in (b"QYR", "QYR") and record[i]:
                             # convert month to quarter, e.g. 12 Q 1990 --> 4 Q 1990
                             # There is no such thing as a %q strftime directive
                             try:
@@ -284,7 +300,7 @@ class SavReader(Header):
         stop = self.nCases if stop is None else stop
         selection = self.selectVars is not None
         selectOne = len(self.selectVars) == 1 if self.selectVars else None
-        for case in xrange(start, stop, step):
+        for case in range(start, stop, step):
 
             if start or step != 1:
                 # only call this when iterating over part of the records
@@ -300,9 +316,9 @@ class SavReader(Header):
             yield self.formatValues(record)
 
     def __iter__(self):
-        """x.__iter__() <==> iter(x). Yields records as a list. 
+        """x.__iter__() <==> iter(x). Yields records as a list.
         For example::
-        
+
             with SavReader("someFile.sav") as reader:
                 for line in reader:
                     process(line)"""
@@ -312,8 +328,8 @@ class SavReader(Header):
         """x.__getitem__(y) <==> x[y], where y may be int or slice.
         This function reports the record of case number <key>.
         The <key> argument may also be a slice, for example::
-            
-            data = SavReader("someFile.sav") 
+
+            data = SavReader("someFile.sav")
             print("The first six records look like this: %s" % data[:6])
             print("The first record looks like this: %s" % data[0])
             print("First column: %s" % data[..., 0]) # requires numpy
@@ -343,9 +359,9 @@ class SavReader(Header):
     def _cast_array(self, cstart, cstop, cstep, raw_result):
         """Helper for _get_array_slice function"""
         varNames = self.varNames[slice(cstart, cstop, cstep)]
-        numVars = [v for v in varNames if self.varTypes[v] == 0 and not 
+        numVars = [v for v in varNames if self.varTypes[v] == 0 and not
                    re.search(b"time|date|n\d+", self.formats[v], re.I)]
-        return [[float(item) if v in numVars else item for 
+        return [[float(item) if v in numVars else item for
                 v, item in zip(varNames, record)]for record in raw_result]
 
     def _get_array_slice(self, key, nRows, nCols):
@@ -432,9 +448,9 @@ class SavReader(Header):
         # cast the result, so floats become floats again
         result = self._cast_array(cstart, cstop, cstep, raw_result)
 
-        # flatten list if it's row or one col                 
+        # flatten list if it's row or one col
         if abs(key[1].start - key[1].stop) == 1 or len(result) == 1:
-            return functools.reduce(list.__add__, result) 
+            return functools.reduce(list.__add__, result)
 
         if is_index:
             return result[0]
@@ -444,7 +460,7 @@ class SavReader(Header):
         """ This convenience function returns the first <n> records.
         Example::
 
-            data = SavReader("someFile.sav") 
+            data = SavReader("someFile.sav")
             print("The first five records look like this: %s" % data.head())
             data.close()"""
         return self[:abs(n)]
@@ -453,7 +469,7 @@ class SavReader(Header):
         """ This convenience function returns the last <n> records.
         Example::
 
-            data = SavReader("someFile.sav") 
+            data = SavReader("someFile.sav")
             print("The last four records look like this: %s" % data.tail(4))
             data.close()"""
         return self[-abs(n):]
@@ -555,7 +571,7 @@ class SavReader(Header):
                 self.recordz = ((record[idPos], i) for i,
                                 record in enumerate(iter(self)))
             else:
-                if not isinstance(key, basestring):
+                if not isinstance(key, str):
                     return default
                 self.recordz = ((record[idPos].rstrip(), i) for i,
                                 record in enumerate(iter(self)))
@@ -616,37 +632,37 @@ class SavReader(Header):
 
         See also
         --------
-        savReaderWriter.SavReaderNp.spss2datetimeDate : returns 
+        savReaderWriter.SavReaderNp.spss2datetimeDate : returns
             ``datetime.datetime`` object
         strptime-formats-settings
-            :download:`__init__.py <../__init__.py>` to change the 
-            strptime formats from ISO into something else. Note that dates 
+            :download:`__init__.py <../__init__.py>` to change the
+            strptime formats from ISO into something else. Note that dates
             before 1900 are *not* affected by format changes in `__init__.py`.
- 
+
         :ref:`dateformats` : overview of SPSS datetime formats"""
         try:
             MIDNIGHT_OCT_14_1582 = 86400
             time_only = spssDateValue < MIDNIGHT_OCT_14_1582
             is_time_fmt = fmt.startswith("%H:%M:%S") and time_only
             is_dtime_fmt = fmt == "%d %H:%M:%S"
-            is_normal_fmt = not is_time_fmt and not is_dtime_fmt 
+            is_normal_fmt = not is_time_fmt and not is_dtime_fmt
             delta = datetime.timedelta(seconds=spssDateValue)
             gregorianEpoch = datetime.datetime(1582, 10, 14, 0, 0, 0)
             theDate = (gregorianEpoch + delta)
 
             if theDate.year >= 1900 and is_normal_fmt:
-                return bytez(datetime.datetime.strftime(theDate, fmt))
+                return datetime.datetime.strftime(theDate, fmt).encode(self.encoding)
             elif is_normal_fmt:
                 #import mx.DateTime  # Python 2 only (2015)
                 #return mx.DateTime.DateTimeFrom(theDate).strftime(fmt)
                 if "%H" in fmt:
-                    return bytez(theDate.isoformat(" "))
-                return bytez(theDate.isoformat().split("T")[0])
+                    return theDate.isoformat(" ").encode(self.encoding)
+                return theDate.isoformat().split("T")[0].encode(self.encoding)
             elif is_time_fmt:
-                return bytez(str(delta).zfill(8))
-            elif is_dtime_fmt: 
-                time_part = bytez(theDate.isoformat().split("T")[1])
-                day_part = bytez(str(delta.days).zfill(2))
+                return str(delta).zfill(8).encode(self.encoding)
+            elif is_dtime_fmt:
+                time_part = theDate.isoformat().split("T")[1].encode(self.encoding)
+                day_part = str(delta.days).zfill(2).encode(self.encoding)
                 return day_part + b" " + time_part
             else:
                 raise RuntimeError
@@ -668,7 +684,7 @@ class SavReader(Header):
         for cnt, varName in enumerate(self.varNames):
             lbl = "string" if self.varTypes[varName] > 0 else "numerical"
             format_ = self.formats[varName].decode(self.encoding)
-            varName = varName.decode(self.encoding) 
+            varName = varName.decode(self.encoding)
             varlist.append(line % (cnt + 1, varName, format_, lbl))
         info = {"savFileName": self.savFileName,
                 "fileSize": fileSize,

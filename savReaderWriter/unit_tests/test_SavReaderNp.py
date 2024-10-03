@@ -5,6 +5,7 @@ import unittest
 import datetime
 import tempfile
 import os
+import sys
 
 try:
     import numpy as np
@@ -13,9 +14,10 @@ try:
 except ImportError:
     numpyOK = False
 
+isCPython = sys.implementation.name == "cpython"
+
 from savReaderWriter import *
 from savReaderNp import *
-from py3k import *
 
 def try_remove(f):
     try:
@@ -23,7 +25,7 @@ def try_remove(f):
     except:
         pass
 
-    
+
 desired_greetings = \
 [(b'\xe0\xa6\xa8\xe0\xa6\xae\xe0\xa6\xb8\xe0\xa7\x8d'
   b'\xe0\xa6\x95\xe0\xa6\xbe\xe0\xa7\xb0'),
@@ -32,7 +34,7 @@ desired_greetings = \
   b'\xe0\xa6\x86\xe0\xa6\xb2\xe0\xa6\xbe\xe0\xa6\x87'
   b'\xe0\xa6\x95\xe0\xa7\x81\xe0\xa6\xae'),
  b'Greetings and salutations',
- (b'\xe1\x83\x92\xe1\x83\x90\xe1\x83\x9b\xe1\x83\x90\xe1' 
+ (b'\xe1\x83\x92\xe1\x83\x90\xe1\x83\x9b\xe1\x83\x90\xe1'
   b'\x83\xa0\xe1\x83\xaf\xe1\x83\x9d\xe1\x83\x91\xe1\x83\x90'),
  (b'\xd0\xa1\xd3\x99\xd0\xbb\xd0\xb5\xd0\xbc\xd0\xb5\xd1'
   b'\x82\xd1\x81\xd1\x96\xd0\xb7 \xd0\xb1\xd0\xb5'),
@@ -53,12 +55,12 @@ class Test_SavReaderNp(unittest.TestCase):
         self.filename = "test_data/Employee data.sav"
         self.nfilename = "test_data/all_numeric.sav"
         self.uncompressedfn = "test_data/all_numeric_uncompressed.sav"
-        self.uncompresseddt = ("test_data/all_numeric_datetime_" + 
+        self.uncompresseddt = ("test_data/all_numeric_datetime_" +
                                "uncompressed.sav")
     def test_getitem_indexing(self):
         self.npreader = SavReaderNp(self.filename)
         actual = self.npreader[0].tolist()
-        desired = [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0, 
+        desired = [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0,
                     3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0)]
         self.assertEqual(actual, desired)
 
@@ -70,7 +72,7 @@ class Test_SavReaderNp(unittest.TestCase):
     def test_getitem_indexing_raw(self):
         self.npreader = SavReaderNp(self.filename, rawMode=True)
         actual = self.npreader[0].tolist()
-        desired = [(1.0, b'm       ', 11654150400.0, 15.0, 
+        desired = [(1.0, b'm       ', 11654150400.0, 15.0,
                     3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0)]
         self.assertEqual(actual, desired)
 
@@ -78,27 +80,27 @@ class Test_SavReaderNp(unittest.TestCase):
         self.npreader = SavReaderNp(self.filename)
         actual = self.npreader[0:2].tolist()
         desired = \
-        [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0, 
-          3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0), 
-         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0, 
+        [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0,
+          3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0),
+         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0,
           1.0, 40200.0, 18750.0, 98.0, 36.0, 0.0)]
         self.assertEqual(actual, desired)
 
     def test_getitem_indexing_IndexError(self):
         self.npreader = SavReaderNp(self.filename)
-        self.assertEqual(self.npreader[475:666].tolist(), []) 
+        self.assertEqual(self.npreader[475:666].tolist(), [])
 
     def test_getitem_striding(self):
         self.npreader = SavReaderNp(self.filename)
         actual = self.npreader[3::-1].tolist()
         desired = \
-        [(4.0, b'f', datetime.datetime(1947, 4, 15, 0, 0), 8.0, 
-          1.0, 21900.0, 13200.0, 98.0, 190.0, 0.0), 
-         (3.0, b'f', datetime.datetime(1929, 7, 26, 0, 0), 12.0, 
-          1.0, 21450.0, 12000.0, 98.0, 381.0, 0.0), 
-         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0, 
-          1.0, 40200.0, 18750.0, 98.0, 36.0, 0.0), 
-         (1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0, 
+        [(4.0, b'f', datetime.datetime(1947, 4, 15, 0, 0), 8.0,
+          1.0, 21900.0, 13200.0, 98.0, 190.0, 0.0),
+         (3.0, b'f', datetime.datetime(1929, 7, 26, 0, 0), 12.0,
+          1.0, 21450.0, 12000.0, 98.0, 381.0, 0.0),
+         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0,
+          1.0, 40200.0, 18750.0, 98.0, 36.0, 0.0),
+         (1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0,
           3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0)]
         self.assertEqual(actual, desired)
 
@@ -111,26 +113,26 @@ class Test_SavReaderNp(unittest.TestCase):
         obj = \
         {'formats': ['<f4', 'S1', '<M8[us]', '<f4', '<f2',
                      '<f8', '<f8', '<f4', '<f8', '<f2'],
-         'names': [u'id', u'gender', u'bdate', u'educ', u'jobcat',
-                   u'salary', u'salbegin', u'jobtime', u'prevexp', 
-                   u'minority'],
-         'titles': [u'Employee Code', u'Gender', u'Date of Birth',
-                    u'Educational Level (years)', u'Employment Category',
-                    u'Current Salary', u'Beginning Salary', 
-                    u'Months since Hire', u'Previous Experience (months)',
-                    u'Minority Classification']}
+         'names': ['id', 'gender', 'bdate', 'educ', 'jobcat',
+                   'salary', 'salbegin', 'jobtime', 'prevexp',
+                   'minority'],
+         'titles': ['Employee Code', 'Gender', 'Date of Birth',
+                    'Educational Level (years)', 'Employment Category',
+                    'Current Salary', 'Beginning Salary',
+                    'Months since Hire', 'Previous Experience (months)',
+                    'Minority Classification']}
         desired = np.array(\
-        [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0, 
+        [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0,
           3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0),
-         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0, 
+         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0,
           1.0, 40200.0, 18750.0, 98.0, 36.0, 0.0),
-         (3.0, b'f', datetime.datetime(1929, 7, 26, 0, 0), 12.0, 
+         (3.0, b'f', datetime.datetime(1929, 7, 26, 0, 0), 12.0,
           1.0, 21450.0, 12000.0, 98.0, 381.0, 0.0)],
         dtype=np.dtype(obj))
         #numpy.testing.assert_allclose(actual, desired, rtol=1e-5)
         self.assertEqual(actual.tolist(), desired.tolist())
         self.assertEqual(actual.dtype, desired.dtype)
-        self.assertEqual(actual.dtype.fields["salary"][2], u"Current Salary")
+        self.assertEqual(actual.dtype.fields["salary"][2], "Current Salary")
 
     def test_to_structured_array_inmemory_raw(self):
         self.npreader = SavReaderNp(self.filename, rawMode=True)
@@ -138,22 +140,22 @@ class Test_SavReaderNp(unittest.TestCase):
         desired = \
         [(1.0, b'm', 11654150400.0, 15.0, 3.0,
           57000.0, 27000.0, 98.0, 144.0, 0.0),
-         (2.0, b'm', 11852956800.0, 16.0, 1.0, 
+         (2.0, b'm', 11852956800.0, 16.0, 1.0,
           40200.0, 18750.0, 98.0, 36.0, 0.0),
-         (3.0, b'f', 10943337600.0, 12.0, 1.0, 
+         (3.0, b'f', 10943337600.0, 12.0, 1.0,
           21450.0, 12000.0, 98.0, 381.0, 0.0)]
         self.assertEqual(actual, desired)
-  
+
     def test_to_structured_array_memmap(self):
         self.npreader = SavReaderNp(self.filename)
         mmapfile = tempfile.mkstemp()[1]
         actual = self.npreader.to_structured_array(mmapfile)[:3].tolist()
         desired = \
-        [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0, 
+        [(1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0,
           3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0),
-         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0, 
+         (2.0, b'm', datetime.datetime(1958, 5, 23, 0, 0), 16.0,
           1.0, 40200.0, 18750.0, 98.0, 36.0, 0.0),
-         (3.0, b'f', datetime.datetime(1929, 7, 26, 0, 0), 12.0, 
+         (3.0, b'f', datetime.datetime(1929, 7, 26, 0, 0), 12.0,
           1.0, 21450.0, 12000.0, 98.0, 381.0, 0.0)]
         self.assertEqual(actual, desired)
         try_remove(mmapfile)
@@ -165,9 +167,9 @@ class Test_SavReaderNp(unittest.TestCase):
         desired = \
         [(1.0, b'm', 11654150400.0, 15.0, 3.0,
           57000.0, 27000.0, 98.0, 144.0, 0.0),
-         (2.0, b'm', 11852956800.0, 16.0, 1.0, 
+         (2.0, b'm', 11852956800.0, 16.0, 1.0,
           40200.0, 18750.0, 98.0, 36.0, 0.0),
-         (3.0, b'f', 10943337600.0, 12.0, 1.0, 
+         (3.0, b'f', 10943337600.0, 12.0, 1.0,
           21450.0, 12000.0, 98.0, 381.0, 0.0)]
         self.assertEqual(actual, desired)
         try_remove(mmapfile)
@@ -178,14 +180,14 @@ class Test_SavReaderNp(unittest.TestCase):
         self.npreader[5]
         actual = next(iter(self.npreader))
         desired = \
-        (1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0, 
+        (1.0, b'm', datetime.datetime(1952, 2, 3, 0, 0), 15.0,
          3.0, 57000.0, 27000.0, 98.0, 144.0, 0.0)
         self.assertEqual(actual, desired)
 
     def test_to_ndarray(self):
         self.npreader = SavReaderNp(self.nfilename)
         actual = self.npreader.to_ndarray()[:5, :]
-        records = [[0.0, np.nan], [1.0, 1.0], [2.0, 4.0], 
+        records = [[0.0, np.nan], [1.0, 1.0], [2.0, 4.0],
                    [3.0, 9.0], [4.0, 16.0]]
         desired = np.array(records)
         numpy.testing.assert_array_equal(actual, desired)
@@ -193,7 +195,7 @@ class Test_SavReaderNp(unittest.TestCase):
     def test_uncompressed_to_ndarray(self):
         self.npreader = SavReaderNp(self.uncompressedfn)
         actual = self.npreader.to_ndarray()[:5, :]
-        records = [[0.0, np.nan], [1.0, 1.0], [2.0, 4.0], 
+        records = [[0.0, np.nan], [1.0, 1.0], [2.0, 4.0],
                    [3.0, 9.0], [4.0, 16.0]]
         desired = np.array(records)
         numpy.testing.assert_array_equal(actual, desired)
@@ -201,13 +203,13 @@ class Test_SavReaderNp(unittest.TestCase):
     def test_uncompressed_to_structured_array(self):
         self.npreader = SavReaderNp(self.uncompressedfn)
         actual = self.npreader.to_structured_array()[:5]
-        records = [[0.0, np.nan], [1.0, 1.0], [2.0, 4.0], 
+        records = [[0.0, np.nan], [1.0, 1.0], [2.0, 4.0],
                    [3.0, 9.0], [4.0, 16.0]]
         desired = np.array(records)
         desired.shape = (10,)
-        obj = dict(names=[u'v1', u'v2'], 
-                   formats=[u'<f8', u'<f8'],
-                   titles=[u'col_000', u'col_001'])
+        obj = dict(names=['v1', 'v2'],
+                   formats=['<f8', '<f8'],
+                   titles=['col_000', 'col_001'])
         desired.dtype = np.dtype(obj)
         self.assertEqual(actual.shape, desired.shape)
         self.assertEqual(actual.dtype, desired.dtype)
@@ -241,11 +243,11 @@ class Test_SavReaderNp(unittest.TestCase):
 
     def test_ioUtf8_structured_array(self):
         self.npreader = SavReaderNp("test_data/greetings.sav", ioUtf8=True)
-        actual = self.npreader.to_structured_array()[u"greeting"].tolist()
+        actual = self.npreader.to_structured_array()["greeting"].tolist()
         actual = [item.rstrip() for item in actual]  # oddity in the test data
         actual = actual[1:-1]
         self.assertEqual(actual, desired_greetings)
-      
+
     def tearDown(self):
         self.npreader.close()
 
@@ -281,7 +283,7 @@ class Test_SavReaderNp_all(unittest.TestCase):
         actual = records["id"].tolist()
         desired = [float(item) for item in range(1, 474+1)]
         self.assertEqual(actual, desired)
-                
+
 if __name__ == "__main__":
     os.chdir("..")
     unittest.main()

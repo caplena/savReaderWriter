@@ -2,28 +2,23 @@
 """
 Download SPSS I/O libraries for mainframes (HP-UX, Solaris, AIX, zLinux)
 
-These have to be downloaded separately because otherwise savReaderWriter 
+These have to be downloaded separately because otherwise savReaderWriter
 exceeds the Pypi file size limit (60Mb or so)
 """
 import os
 import sys
 import platform
 import zipfile
+import urllib.request
 from os.path import join, dirname, basename, abspath, pardir, isdir
 
-if sys.version_info.major > 2:
-    import urllib.request
-    urlretrieve = urllib.request.urlretrieve
-else:
-    import urllib
-    urlretrieve = urllib.urlretrieve
 
 
 def spssio_foldername():
     arch = platform.architecture()[0]
     is_64bit = arch == "64bit"
     pf = sys.platform.lower()
-    msg = ("Your platform (%r, %s) is either not supported, or does not " 
+    msg = ("Your platform (%r, %s) is either not supported, or does not "
            "require that the SPSS I/Olibraries are downloaded separately")
     if is_64bit:
         if pf.startswith("lin")and os.uname()[-1] == "s390x":
@@ -38,7 +33,7 @@ def spssio_foldername():
             raise EnvironmentError(msg % (pf, arch))
     else:
         raise EnvironmentError(msg % (pf, arch))
-    
+
 def download_progress(count, block_size, total_size):
    percent = int((count * block_size * 100) / total_size)
    s = '\r[{0}] {1}%'.format('#' * percent, percent)
@@ -66,10 +61,10 @@ def main():
                    "mainframe_libs.zip")
     local_file = join(dst_path, basename(remote_file))
     print("... Downloading '%s'" % remote_file)
-    urlretrieve(remote_file, local_file, reporthook=download_progress)
+    urllib.request.urlretrieve(remote_file, local_file, reporthook=download_progress)
     unzip(local_file, dst_path)
     print("Done!")
-                
- 
+
+
 if __name__ == "__main__":
     main()

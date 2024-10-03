@@ -22,16 +22,15 @@ class test_SPSSIOError(unittest.TestCase):
                 f.write(line)
 
     def test_raises_SPSSIOError(self):
-        module = rw if sys.version_info[0] > 2 else rw.error
-        SPSSIOError = module.SPSSIOError  
-        retcodes = module.retcodes
+        SPSSIOError = rw.SPSSIOError
+        retcodes = rw.retcodes
         with self.assertRaises(SPSSIOError):
             with rw.SavReader(self.badSavFile) as reader:
                 for line in reader:
                     pass
             error = sys.exc_info()[1]
             self.assertEqual(retcodes.get(error.retcode), "SPSS_INVALID_FILE")
-  
+
     def tearDown(self):
         try:
             os.remove(self.badSavFile)

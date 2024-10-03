@@ -13,7 +13,7 @@ import encodings
 import collections
 
 from savReaderWriter import *
-from py3k import *
+from helpers import c_char_p_wrapper
 
 class Generic(object):
     """
@@ -35,16 +35,16 @@ class Generic(object):
         self.ioUtf8 = bool(ioUtf8)  # bool() --> needed for UNICODE_BMODE
 
     def _encodeFileName(self, fn):
-        """Helper function to encode unicode file names into bytestring file
+        """Helper function to encode str file names into bytestring file
         names encoded in the file system's encoding. Needed for C functions
         that have a c_char_p filename argument.
 
         See also
         --------
         Effbot `http://effbot.org/pyref/sys.getfilesystemencoding.htm`_
-        Python docs `http://docs.python.org/2/howto/unicode.html_ (under 'unicode filenames)"""
+        """
         #import pdb; pdb.set_trace()
-        if not isinstance(fn, unicode):
+        if not isinstance(fn, str):
             return fn
         elif sys.platform.startswith("win"):  # pragma: no cover
             return self.wideCharToMultiByte(fn)
@@ -89,7 +89,7 @@ class Generic(object):
             print("\n".join(libs))
         # PermissionError: are the DLLs on a network share (e.g NAS)?
         return [load(os.path.join(path, lib)) for lib in libs][-1]
-             
+
     def loadLibrary(self):  # pragma: no cover
         """This function loads and returns the SPSSIO libraries,
         depending on the platform."""
@@ -130,8 +130,8 @@ class Generic(object):
         return spssio
 
     def wideCharToMultiByte(self, fn):  # pragma: no cover
-        """Maps a wide character string to a new character filename string. 
-        The new character string is not necessarily from a multibyte character set. 
+        """Maps a wide character string to a new character filename string.
+        The new character string is not necessarily from a multibyte character set.
 
         See also
         --------
@@ -197,12 +197,12 @@ class Generic(object):
             fd = f.fileno()
 
         # open the .sav file
-        savFileName = c_char_py3k(savFileName)
-        fh = c_int(fd) 
+        savFileName = c_char_p_wrapper(savFileName)
+        fh = c_int(fd)
         if mode == b"cp":
             if not refSavFileName:
                 raise ValueError("You must specify a reference (=donor) file")
-            refSavFileName = c_char_py3k(expandfn(refSavFileName))
+            refSavFileName = c_char_p_wrapper(expandfn(refSavFileName))
             spssOpen.argtypes = [c_char_p, c_char_p, POINTER(c_int)]
             retcode = spssOpen(savFileName, refSavFileName, byref(fh))
         else:
@@ -245,7 +245,7 @@ class Generic(object):
     @property
     def byteorder(self):
         """This function returns the byte order of the open file as a string.
-        It returns either 'little' or 'big'.""" 
+        It returns either 'little' or 'big'."""
         endianness = self.releaseInfo["big/little-endian code"]
         return "big" if endianness else "little"
 
@@ -384,7 +384,7 @@ class Generic(object):
         try:
             lowest, highest = c_double(), c_double()
             func = self.spssio.spssLowHighVal
-            func.argtypes = [POINTER(c_double), POINTER(c_double)] 
+            func.argtypes = [POINTER(c_double), POINTER(c_double)]
             retcode = func(byref(lowest), byref(highest))
             checkErrsWarns("Problem getting min/max missing values", retcode)
             return Range(lowest.value, highest.value)
@@ -405,11 +405,11 @@ class Generic(object):
 
         The 'codeset' and 'modifier' components are optional and in Windows,
         aliases (e.g. 'english') may be used. When the I/O Module is first
-        loaded, its locale is set to the system default. 
-        
+        loaded, its locale is set to the system default.
+
         See also
         --------
-        linux : `<https://wiki.archlinux.org/index.php/Locale>`_ 
+        linux : `<https://wiki.archlinux.org/index.php/Locale>`_
         windows : `<http://msdn.microsoft.com/en-us/library/39cwe7zf(v=vs.80).aspx>`_"""
         if hasattr(self, "setLocale"):
             return self.setLocale
@@ -426,7 +426,7 @@ class Generic(object):
         func = self.spssio.spssSetLocale
         func.argtypes = [c_int, c_char_p]
         func.restype = c_char_p
-        self.setLocale = func(locale.LC_ALL, c_char_py3k(localeName))
+        self.setLocale = func(locale.LC_ALL, c_char_p_wrapper(localeName))
         if self.setLocale is None:
             raise ValueError("Invalid ioLocale: %r" % localeName)
 
@@ -434,16 +434,16 @@ class Generic(object):
     def fileCodePage(self):
         """This function provides the Windows code page number of the encoding
         applicable to a file.
-        
+
         Returns
         -------
         codepage : int or None
             Windows code page number of the encoding applicable to the file
-            If no encoding information is present (file was created with 
+            If no encoding information is present (file was created with
             SPSS v14 or older), None is returned"""
         nCodePage = c_int()
         func = self.spssio.spssGetFileCodePage
-        func.argtypes = [c_int, POINTER(c_int)] 
+        func.argtypes = [c_int, POINTER(c_int)]
         retcode = func(self.fh, byref(nCodePage))
         checkErrsWarns("Problem getting file codepage", retcode)
         # SPSS I/O incorrectly returns 65001 when encoding info is absent,
@@ -451,7 +451,7 @@ class Generic(object):
         if self.spssVersion.major < 15:
             return None
         return nCodePage.value
-        
+
 
     def isCompatibleEncoding(self):
         """This function determines whether the file and interface encoding
@@ -461,7 +461,7 @@ class Generic(object):
             func = self.spssio.spssIsCompatibleEndoding
         except AttributeError:
             func = self.spssio.spssIsCompatibleEncoding
-        func.argtypes = [c_int, POINTER(c_int)] 
+        func.argtypes = [c_int, POINTER(c_int)]
         func.restype = c_bool
         isCompatible = c_int()
         retcode = func(self.fh, byref(isCompatible))
@@ -516,16 +516,16 @@ class Generic(object):
         ISO-8859-1, which is then converted to the corresponding Python
         codec name. If the file contains no file encoding, the locale's
         preferred encoding is returned
-        
+
         Returns
         -------
         encoding : bytestring or None
-            The encoding applicable to the file. If no encoding information 
+            The encoding applicable to the file. If no encoding information
             is present (SPSS v14 or older), None is returned
 
         See also
         --------
-        savReaderWriter.Generic.encoding : similar, but tries to guess 
+        savReaderWriter.Generic.encoding : similar, but tries to guess
             the encoding when it is not present in the header
         """
 
@@ -550,17 +550,17 @@ class Generic(object):
             print ("NOTE. IANA coding lookup error. Code %r " % iana_code +
                    "does not map to any Python codec.")
             return locale.getpreferredencoding()
-            
+
     @property
     def encoding(self):
-        """This function is similar to `fileEncoding`, but it tries to guess 
+        """This function is similar to `fileEncoding`, but it tries to guess
         the encoding if this information is not present in the file header
         (ie., in files created with SPSS v14 or earlier). If this is the case,
         and the file was created under Windows, the Windows codepage associated
-        with the current locale is returned. If the current locale does not 
-        have a codepage (e.g., Georgian, Armenian), or if the file was created 
+        with the current locale is returned. If the current locale does not
+        have a codepage (e.g., Georgian, Armenian), or if the file was created
         on another OS, `locale.getpreferredencoding()` is returned.
-        
+
         Returns
         -------
         encoding : bytestring
@@ -598,10 +598,10 @@ class Generic(object):
             self.pack_into(self.caseBuffer, 0, *record)
         except struct.error:
             msg = sys.exc_info()[1]
-            if any([isinstance(value, unicode) for value in record]):
-                msg +=  ". Use ioUtf8=True to write unicode strings"
+            if any([isinstance(value, str) for value in record]):
+                msg +=  ". Use ioUtf8=True to write strings"
             raise TypeError(msg)
         self.wholeCaseOut.argtypes = [c_int, c_char_p]
-        retcode = self.wholeCaseOut(self.fh, c_char_py3k(self.caseBuffer.raw))
+        retcode = self.wholeCaseOut(self.fh, c_char_p_wrapper(self.caseBuffer.raw))
         if retcode:
             checkErrsWarns("Problem writing row\n%r" % record, retcode)

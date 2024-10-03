@@ -18,12 +18,7 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX :: SunOS/Solaris",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.3",
-    "Programming Language :: Python :: 3.4",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Cython",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -39,6 +34,7 @@ dynamic = ["version"]
 license = {file = "LICENSE.txt"}
 name = "savReaderWriter"
 readme = "README.md"
+requires-python = '~=3.7'
 
 [tool.setuptools.dynamic]
 version = {attr = "savReaderWriter.__version__"}

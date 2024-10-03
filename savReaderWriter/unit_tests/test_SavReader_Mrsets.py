@@ -6,8 +6,8 @@ from savReaderWriter import *
 
 # See also issue #26
 # TODO: add test data with 'Extended' multiple response groups.
-# I have no idea how to define these  
-# Email syntax or datafile to "@".join(["fomcl", "yahoo.%s" % ".com"]) 
+# I have no idea how to define these
+# Email syntax or datafile to "@".join(["fomcl", "yahoo.%s" % ".com"])
 
 savFileName = "test_data/spssio_test.sav"
 desired = \
@@ -28,27 +28,27 @@ desired = \
                             b'AGE3']}}
 
 udesired = \
-{u'V': {u'countedValue': u'1',
-        u'label': u'',
-        u'setType': u'D',
-        u'varNames': [u'V1', u'V2', u'V3']},
- u'ages': {u'label': u'the ages',
-           u'setType': u'C',
-           u'varNames': [u'Age', u'AGE2', u'AGE3']},
- u'incomes': {u'label': u'three kinds of income',
-              u'setType': u'C',
-              u'varNames': [u'Income1',
-                            u'Income2',
-                            u'Income3',
-                            u'Age',
-                            u'AGE2',
-                            u'AGE3']}}
+{'V': {'countedValue': '1',
+        'label': '',
+        'setType': 'D',
+        'varNames': ['V1', 'V2', 'V3']},
+ 'ages': {'label': 'the ages',
+           'setType': 'C',
+           'varNames': ['Age', 'AGE2', 'AGE3']},
+ 'incomes': {'label': 'three kinds of income',
+              'setType': 'C',
+              'varNames': ['Income1',
+                            'Income2',
+                            'Income3',
+                            'Age',
+                            'AGE2',
+                            'AGE3']}}
 
 class Test_Mrsets(unittest.TestCase):
 
     """
     Read multiple response sets (dichotomy and categorical)
-    """  
+    """
 
     def setUp(self):
         self.maxDiff = None

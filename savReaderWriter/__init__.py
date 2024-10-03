@@ -106,10 +106,9 @@ supportedDates = {  # uses ISO dates wherever applicable.
     b"QYR": "%m Q %Y",  # %m (month) is converted to quarter, see next dict.
     b"TIME": "%H:%M:%S.%f",
     b"DTIME": "%d %H:%M:%S"}
-if sys.version_info[0] > 2:
-    usupportedDates = {k.decode("utf-8"): v for k, v in supportedDates.items()}
-    supportedDates.update(usupportedDates)
-    del usupportedDates
+usupportedDates = {k.decode("utf-8"): v for k, v in supportedDates.items()}
+supportedDates.update(usupportedDates)
+del usupportedDates
 
 
 QUARTERS = {b'01': b'1', b'02': b'1', b'03': b'1',
@@ -127,11 +126,10 @@ userMissingValues = {
 
 # ioUtf8 constants
 CODEPAGE_MODE = 0  # ioUtf8=False
-UNICODE_UMODE = 1  # ioUtf8=True, data returned as u" strings
-UNICODE_BMODE = 2  # ioUtf8=True, data returned as b" strings
+UNICODE_UMODE = 1  # ioUtf8=True, data returned as strings
+UNICODE_BMODE = 2  # ioUtf8=True, data returned as bytes
 
 sys.path.insert(0, os.path.dirname(__file__))
-from py3k import *
 from error import *
 from generic import *
 from header import *

@@ -28,9 +28,7 @@ Currently supported are:
 -Microsoft Excel (*.xls, *.xlsx) -- depends on xlrd
 
 Commandline use: python savViewer.py somefile.sav
-GUI use: python savViewer.py 
-
-Suitable for use with Python 2.7 and 3.3
+GUI use: python savViewer.py
 """
 
 __author__ = "Albert-Jan Roskam"
@@ -39,33 +37,22 @@ __version__ = "1.0.5"
 __date__ = "2014-01-14"
 
 
-# Python 3
-py3k = sys.version_info.major >= 3
 
 try:
-   from itertools import izip_longest
+   from itertools import zip_longest
 except ImportError:
-   from itertools import zip_longest as izip_longest
+   from itertools import zip_longest as zip_longest
 
-try:
-    xrange
-except NameError:
-    xrange = range
-
-try:
-    unicode
-except NameError:
-    unicode = str
 
 # ensure locale.getlocale won't return (None, None)
-locale.setlocale(locale.LC_ALL, "")  
+locale.setlocale(locale.LC_ALL, "")
 
 class ExtIterBase(object):
 
     """
-    Abstract base class that should make it easier to add concrete 
+    Abstract base class that should make it easier to add concrete
     *Iter (e.g. SavIter, CsvIter) classes
-    """ 
+    """
 
     __metaclass__ = abc.ABCMeta
 
@@ -97,9 +84,9 @@ class ExtIterBase(object):
 class CsvIter(ExtIterBase):
 
     def __init__(self, csvFileName):
-    
-        global csv, codecs, icu 
-        import csv 
+
+        global csv, codecs, icu
+        import csv
         import codecs
         try:
             import icu  # sudo apt-get install libicu && pip install pyicu
@@ -116,8 +103,8 @@ class CsvIter(ExtIterBase):
         self.csvfile = codecs.open(self.csvFileName, "r+", self.fileEncoding)
         self.data = self.mapfile(self.csvfile)
         self.dialect = self._get_dialect(self.csvFileName, self.fileEncoding)
-        self.varNames_ = self._get_header(self.csvFileName, 
-                                          self.fileEncoding, 
+        self.varNames_ = self._get_header(self.csvFileName,
+                                          self.fileEncoding,
                                           self.dialect)
         self.Shape = ntuple("Shape", ["nrows", "ncols"])
 
@@ -143,15 +130,8 @@ class CsvIter(ExtIterBase):
             if self.lookup_done:
                 self.thread.join()
 
-        if py3k:  
-            # 3.x csv requires unicode
-            line = self.data[start:end].strip().decode(self.fileEncoding_)
-            return next(csv.reader(line, dialect=self.dialect))
-        else:
-            # 2.x csv lacks unicode support
-            line = self.data[start:end].strip()
-            row = next(csv.reader([line], dialect=self.dialect))
-            return [cell.decode(self.fileEncoding_) for cell in row]
+        line = self.data[start:end].strip().decode(self.fileEncoding_)
+        return next(csv.reader(line, dialect=self.dialect))
 
     def mapfile(self, fileObj):
         size = os.path.getsize(fileObj.name)
@@ -164,7 +144,7 @@ class CsvIter(ExtIterBase):
                 break
             self.lookup.append(record_start)
             # len(), because fObj.tell() --> won't work with threading
-            record_start += len(line)  
+            record_start += len(line)
         self.lookup_done = True
 
     def close(self):
@@ -227,7 +207,7 @@ class CsvIter(ExtIterBase):
         csv_reader = csv.reader(self.utf_8_encoder(unicode_csv_data, encoding),
                                 dialect=dialect, **kwargs)
         for row in csv_reader:
-            yield [unicode(cell, encoding) for cell in row]
+            yield [str(cell, encoding) for cell in row]
 
     def utf_8_encoder(self, unicode_csv_data, encoding):
         for line in unicode_csv_data:
@@ -239,14 +219,14 @@ TabIter = CsvIter
 class XlsIter(ExtIterBase):
 
     def __init__(self, xlsFileName):
-    
+
         global xlrd
         import xlrd
 
         self.xlsFileName = xlsFileName
         self.file = open(self.xlsFileName, "rb")
         self.xlsfile = xlrd.open_workbook(file_contents=mmap.mmap(
-                                          self.file.fileno(), 0, 
+                                          self.file.fileno(), 0,
                                           access=mmap.ACCESS_READ))
         self.shape_ = self._get_shape(self.xlsfile)
         self.varNames_ = self._get_header(self.shape.ncols)
@@ -267,7 +247,7 @@ class XlsIter(ExtIterBase):
     def _get_row_lookup(self):
         lookup, global_row = {}, 0
         for sheetno, sheet in enumerate(self.xlsfile.sheets()):
-            for local_row in xrange(sheet.nrows):
+            for local_row in range(sheet.nrows):
                 lookup[global_row] = (sheetno, local_row)
                 global_row += 1
         return lookup
@@ -287,8 +267,8 @@ class XlsIter(ExtIterBase):
     def _get_shape(self, xlsfile):
         nrows, ncols = [], []
         for sheet in self.xlsfile.sheets():
-            nrows.append(sheet.nrows) 
-            for row in xrange(sheet.nrows):
+            nrows.append(sheet.nrows)
+            for row in range(sheet.nrows):
                 ncols.append(sheet.ncols + 1) # + 1 for the sheetname itself
         nrows, ncols = sum(nrows), max(ncols)
         return ntuple("Shape", ["nrows", "ncols"])(nrows, ncols)
@@ -313,7 +293,7 @@ class SavIter(ExtIterBase):
     def __getitem__(self, key):
         # much faster than SavReader.__getitem__
         self.seekNextCase(self.fh, key)
-        return self.formatValues(self.records.record) 
+        return self.formatValues(self.records.record)
 
     def init_seekNextCase(self):
         self.spssio = self.records.spssio
@@ -334,7 +314,7 @@ class SavIter(ExtIterBase):
 
     @property
     def varNames(self):
-        decode = lambda x: unicode(x, self.fileEncoding)
+        decode = lambda x: bytes.decode(x, self.fileEncoding)
         try:
             return list(map(decode, self.records.varNames))
         except TypeError:
@@ -355,7 +335,7 @@ class SavIter(ExtIterBase):
             except ValueError:
                 msg = ("Locale not found --> Linux: sudo localedef -f "
                        "%s -i %s /usr/lib/locale/%s")
-                msg = msg % (encoding.upper(), locale_.split(".")[0], locale_) 
+                msg = msg % (encoding.upper(), locale_.split(".")[0], locale_)
                 raise ValueError(msg)
         return data
 
@@ -394,8 +374,8 @@ class Menu(QMainWindow):
     def create_menu_bar(self):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(self.openFile)  
-        fileMenu.addAction(self.exitAct)  
+        fileMenu.addAction(self.openFile)
+        fileMenu.addAction(self.exitAct)
         aboutMenu = menubar.addAction(self.aboutAct)
 
     def set_filename(self, filename):
@@ -408,14 +388,14 @@ class Menu(QMainWindow):
     def read_file(self):
         if self.table.savFileName:
             self.table.records = self.table.data(self.table.savFileName)
-            nrows, ncols = self.table.records.shape 
+            nrows, ncols = self.table.records.shape
             self.spin_box.setRange(-nrows - 1, nrows - 1)
             self.table.create_vert_scrollbar(nrows)  # redraw
             self.table.create_table(self.table.block_size, self.table.records.varNames)
             self.table.update_grid()
 
             nrows, ncols = "{:,}".format(nrows), "{:,}".format(ncols)
-            title = "%s (%s rows, %s columns)" 
+            title = "%s (%s rows, %s columns)"
             self.title = title % (self.table.savFileName, nrows, ncols)
             self.setWindowTitle(self.title)
 
@@ -432,15 +412,12 @@ class Menu(QMainWindow):
                           "Character-Separated Values files (*.csv *.tab);;"
                           "Excel files (*.xls *.xlsx);;"
                           "All Files (*)")
-        args = ('Open file', directory, selectedFilter) 
+        args = ('Open file', directory, selectedFilter)
         self.table.savFileName = QFileDialog.getOpenFileName(self, *args)
-        if not py3k: 
-            fs_encoding = sys.getfilesystemencoding()  # windows okay? mbcs??
-            self.table.savFileName = unicode(self.table.savFileName, fs_encoding)
         self.read_file()
 
     def create_spinbox_group(self):
-        group = QGroupBox()    
+        group = QGroupBox()
         group.setTitle("Retrieve record")
         self.main_layout.addWidget(group)
 
@@ -463,12 +440,12 @@ class Menu(QMainWindow):
         # add a checkbox -for fun
         cb = QCheckBox('Managerize data', self)
         def do_cb():
-            self.table.do_managerize = cb.isChecked() 
+            self.table.do_managerize = cb.isChecked()
         QObject.connect(cb, SIGNAL("stateChanged(int)"), do_cb)
         hbox.addWidget(cb)
 
         group.setLayout(hbox)
-        hbox.addStretch(1) 
+        hbox.addStretch(1)
 
         def retrieve():
             if hasattr(self.table, "records"):
@@ -495,7 +472,7 @@ class Menu(QMainWindow):
 
     def about(self):
         title = "SPSS Data File Viewer\n\n%s\n(%s)\nversion %s\n%s"
-        title = title % (__author__, __email__, __version__, __date__) 
+        title = title % (__author__, __email__, __version__, __date__)
         QMessageBox.about(self, self.tr("About"), self.tr(title))
 
     def closeEvent(self, event):
@@ -509,7 +486,7 @@ class Menu(QMainWindow):
             event.ignore()
 
     def start_thread(self):
-        self.thread = QThread() 
+        self.thread = QThread()
         self.connect(self.thread , SIGNAL('update(QString)') , self.update_screen)
         self.thread.start()
 
@@ -522,12 +499,12 @@ class Menu(QMainWindow):
             title = "{} ({:,} rows, {:,} columns)"
             title = title.format(self.table.savFileName, nrows, ncols)
             self.setWindowTitle(title)
-            self.table.vert_scroll.setRange(0, nrows - 1) 
+            self.table.vert_scroll.setRange(0, nrows - 1)
             self.spin_box.setRange(-nrows, nrows)
             self.app.processEvents()
             time.sleep(0.05)
             if previous_nrows >= nrows:
-                break 
+                break
             previous_nrows = nrows
 
 class MyScrollBar(QScrollBar):
@@ -547,16 +524,16 @@ class Table(QDialog):
         self.savFileName = savFileName
         self.block_size = block_size
         self.layout = QGridLayout()
-        self.setLayout(self.layout) 
+        self.setLayout(self.layout)
         self.create_table(self.block_size)
         self.create_vert_scrollbar()
-        self.update_grid() 
+        self.update_grid()
         self.do_managerize = False  # :-)
 
     def data(self, fileName):
         extension = os.path.splitext(fileName)[1]
         classname = extension[1:].title() + "Iter"
-        try: 
+        try:
             return globals()[classname](fileName)
         except KeyError:
             raise TypeError("Unknown filetype: %r" % extension)
@@ -566,12 +543,12 @@ class Table(QDialog):
         self.vert_scroll.setSingleStep(1)
         self.vert_scroll.setFocusPolicy(Qt.StrongFocus)
         self.vert_scroll.setValue(0)
-        self.vert_scroll.setRange(0, upper - 1) 
+        self.vert_scroll.setRange(0, upper - 1)
         self.layout.addWidget(self.vert_scroll, 0, 1)
         QObject.connect(self.vert_scroll, SIGNAL("clicked()"), self.update_grid)
 
     def create_table(self, block_size, colnames=None):
-        if colnames: 
+        if colnames:
             self.table = QTableWidget(block_size, len(colnames))
             self.table.setHorizontalHeaderLabels(colnames)
         else:  # initialize empty table
@@ -596,7 +573,7 @@ class Table(QDialog):
         dim = data.shape
         encoding = data.fileEncoding
         varNames = data.varNames
-        
+
         # get block numbers
         start_row = self.vert_scroll.value() if start_row is None else start_row
         end_row = start_row + self.block_size
@@ -611,14 +588,11 @@ class Table(QDialog):
             self.create_table(self.block_size, varNames)
 
         # set row/column labels
-        if py3k:        
-            self.table.setVerticalHeaderLabels(list(map(str, block)))
-        else:
-            self.table.setVerticalHeaderLabels(QStringList(map(str, block)))
+        self.table.setVerticalHeaderLabels(list(map(str, block)))
         self.table.setHorizontalHeaderLabels(varNames)
 
         # fill the grid with values. The very last block is annoying
-        for row, fake_row in izip_longest(block, fake_block):
+        for row, fake_row in zip_longest(block, fake_block):
             row_exists = row is not None
             if row_exists:
                 record = data[row]
@@ -632,24 +606,24 @@ class Table(QDialog):
                         break
                         #value = "<???>"
                     table_item = QTableWidgetItem(value)
-                    if value == u"nan":
+                    if value == "nan":
                         table_item.setTextColor(QColor("red"))
                         table_item.setBackgroundColor(QColor("yellow"))
-                    elif value == u"":
+                    elif value == "":
                         table_item.setBackgroundColor(QColor("gray"))
 
                     if self.do_managerize:
-                        table_item.setBackgroundColor(QColor(self.managerize())) 
+                        table_item.setBackgroundColor(QColor(self.managerize()))
                     self.table.setItem(fake_row, col, table_item)
                     #self.table.setItem(fake_row, col, QTableWidgetItem(value))
-            if not row_exists: 
-                break 
+            if not row_exists:
+                break
 
     def _convert(self, value, encoding):
         try:
-            return unicode(value, encoding)
-        except TypeError:
-            return unicode(value)
+            return value.decode(encoding)
+        except AttributeError:
+            return str(value)
 
     def managerize(self):
         rgb = (randint(0, 255), randint(0, 255), randint(0, 255))

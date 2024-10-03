@@ -27,13 +27,13 @@ def test_accented_varSet_codepage_mode():
 
 
 def test_accented_varSet_unicode_mode():
-    kwargs["varSets"] = {u'\xfcberhaupt': varNames}
+    kwargs["varSets"] = {'\xfcberhaupt': varNames}
     kwargs["ioUtf8"] = True
     with srw.SavWriter(**kwargs) as writer:
         for i in range(10):
             writer.writerow([1, 1])
     with srw.SavHeaderReader(kwargs["savFileName"], ioUtf8=True) as header:
         actual = header.varSets
-    desired = {u'\xfcberhaupt': [u'salbegin', u'salary']}
+    desired = {'\xfcberhaupt': ['salbegin', 'salary']}
     remove(kwargs["savFileName"])
     assert actual == desired, actual

@@ -8,7 +8,6 @@ import locale
 from savReaderWriter import *
 from header import *
 
-@implements_to_string
 class SavHeaderReader(Header):
     """
     This class contains methods that read the data dictionary of an SPSS
@@ -21,17 +20,17 @@ class SavHeaderReader(Header):
     savFileName : str
         The file name of the spss data file
     ioUtf8 : bool, int, default False
-        Indicates the mode in which text communicated to or from 
-        the I/O Module will be. See also under 
+        Indicates the mode in which text communicated to or from
+        the I/O Module will be. See also under
         :py:meth:`savReaderWriter.Generic.ioUtf8` and under
         ``ioUtf8`` in :py:class:`savReaderWriter.SavReader`.
 
         .. versionchanged:: 3.4
-            ``ioUtf8=UNICODE_BMODE`` was added. 
+            ``ioUtf8=UNICODE_BMODE`` was added.
 
    ioLocale : locale str, optional
-        indicates the locale of the I/O module. Cf. `SET LOCALE`. 
-        (default = None, which corresponds to 
+        indicates the locale of the I/O module. Cf. `SET LOCALE`.
+        (default = None, which corresponds to
         ``locale.setlocale(locale.LC_CTYPE)``)
 
     Examples
@@ -46,7 +45,7 @@ class SavHeaderReader(Header):
 
    See also
    --------
-   savReaderWriter.Header : for more options to retrieve individual 
+   savReaderWriter.Header : for more options to retrieve individual
        metadata items"""
 
     def __init__(self, savFileName, ioUtf8=False, ioLocale=None):
@@ -58,12 +57,12 @@ class SavHeaderReader(Header):
         self.numVars = self.numberofVariables
         self.nCases = self.numberofCases
 
-    def __str__(self):
+    def __bytes__(self):
         """ This function returns a report of the SPSS data dictionary
-        (i.e., the header), in the encoding of the spss file"""
-        return unicode(self).encode(self.encoding)
+        (i.e., the header)."""
+        return self.__str__().encode(self.encoding)
 
-    def __unicode__(self):
+    def __str__(self):
         """ This function returns a report of the SPSS data dictionary
         (i.e., the header)."""
         report = ""
@@ -79,8 +78,8 @@ class SavHeaderReader(Header):
 
         .. warning::
 
-            Always ensure the the .sav file is properly closed, either by 
-            using a context manager (``with`` statement) or by using 
+            Always ensure the the .sav file is properly closed, either by
+            using a context manager (``with`` statement) or by using
             ``close()``"""
         return self
 
@@ -111,7 +110,7 @@ class SavHeaderReader(Header):
                  "varAttributes", "fileAttributes", "fileLabel",
                  "multRespDefs", "caseWeightVar"] # "dateVariables"]
         if self.ioUtf8:
-            items = map(unicode, items)
+            items = map(str, items)
         metadata = dict([(item, getattr(self, item)) for item in items])
         if asNamedtuple:
             Meta = collections.namedtuple("Meta", " ".join(metadata.keys()))
@@ -176,7 +175,7 @@ class SavHeaderReader(Header):
                             report.append("%s -- %s" % (varName, values))
             else:
                 # varname, file label
-                if isinstance(allValues, (str, bytes, unicode)) and allValues:
+                if isinstance(allValues, (str, bytes)) and allValues:
                     allValues = [allValues]
                 for varName in allValues:
                     if isinstance(varName, bytes):

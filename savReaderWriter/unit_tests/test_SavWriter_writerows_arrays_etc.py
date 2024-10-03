@@ -6,6 +6,7 @@ Writing rows from arrays et al.
 
 import os
 import re
+import sys
 from os.path import join
 from tempfile import gettempdir
 from collections import namedtuple
@@ -24,8 +25,9 @@ try:
 except ImportError:
     numpyOK = False
 
+isCPython = sys.implementation.name == "cpython"
+
 import savReaderWriter as srw
-from py3k import *
 
 
 args = ( ["v1", "v2"], dict(v1=0, v2=0) )
@@ -79,7 +81,7 @@ def test_writerows_pd_np_issue63():
     """
     if skip:
         raise SkipTest
-    buff = StringIO(u"""n1,n2,s1,s2
+    buff = StringIO("""n1,n2,s1,s2
     1,1,a,a
     2,2,b,bb
     3,,c,""")

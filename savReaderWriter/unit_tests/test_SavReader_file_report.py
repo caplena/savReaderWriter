@@ -6,7 +6,6 @@
 ##############################################################################
 
 import unittest
-import sys
 import os
 import gocept.testing.assertion
 from savReaderWriter import *
@@ -32,7 +31,7 @@ report_expected = """\
   09. prevexp (F6 - numerical)
   10. minority (F1 - numerical)
 **********************************************************************
-""".replace("\n", os.linesep) 
+""".replace("\n", os.linesep)
 
 class test_SavReader_file_report(unittest.TestCase, gocept.testing.assertion.Ellipsis):
     """Generate a file report"""
@@ -46,15 +45,6 @@ class test_SavReader_file_report(unittest.TestCase, gocept.testing.assertion.Ell
             report_got = str(data)
         self.assertEllipsis(report_expected, report_got)
 
-    @unittest.skipIf(sys.version_info[0] > 2, "No 'unicode' in Python 3")
-    def test_SavReader_report_python2_unicode(self):
-        data = SavReader(self.savFileName)
-        with data:
-            report_got = unicode(data)
-            encoding = data.encoding
-        self.assertEllipsis(report_expected.decode(encoding), report_got)
-
-    @unittest.skipIf(sys.version_info[0] == 2, "No bytes method in Python 2")
     def test_SavReader_report_python3_bytes(self):
         data = SavReader(self.savFileName)
         with data:
