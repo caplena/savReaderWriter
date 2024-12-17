@@ -493,7 +493,12 @@ class SavReader(Header):
             list_of_lists = data.all(False)
             data.close()"""
         if asNamedtuple:
-            uheader = [item.decode(self.encoding) for item in self.header]
+            uheader = [
+                item.decode(self.encoding)
+                if isinstance(item, bytes)
+                else item
+                for item in self.header
+            ]
             Record = collections.namedtuple("Record", uheader)
             return [Record(*record) for record in iter(self)]
         return [record for record in iter(self)]
