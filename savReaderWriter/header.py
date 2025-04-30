@@ -395,7 +395,7 @@ class Header(Generic):
     def _splitformats(self):
         """This function returns the 'bare' formats + variable widths,
         e.g. format `F5.3` is returned as 'F' and '5'"""
-        pattern = b"(?P<bareFmt>[a-z]+)(?P<varWid>\d+)[.]?\d*"
+        pattern = br"(?P<bareFmt>[a-z]+)(?P<varWid>\d+)[.]?\d*"
         if self.ioUtf8_:
             pattern = pattern.decode("utf-8")
         regex = re.compile(pattern, re.I)
@@ -412,9 +412,9 @@ class Header(Generic):
             return
         reverseFormats = dict([(v[0][9:], k) for k, v in allFormats.items()])
         validValues = sorted(reverseFormats.keys())
-        regex = b"(?P<printFormat>A(HEX)?)(?P<printWid>\d+)"
+        regex = br"(?P<printFormat>A(HEX)?)(?P<printWid>\d+)"
         isStringVar = re.compile(regex, re.IGNORECASE)
-        regex = b"(?P<printFormat>[A-Z]+)(?P<printWid>\d+)\.?(?P<printDec>\d*)"
+        regex = br"(?P<printFormat>[A-Z]+)(?P<printWid>\d+)\.?(?P<printDec>\d*)"
         isAnyVar = re.compile(regex, re.IGNORECASE)
 
         funcP = self.spssio.spssSetVarPrintFormat  # print type
@@ -1031,19 +1031,19 @@ class Header(Generic):
         (multiple dichotomy sets) or 'C' (multiple category sets). If setType
         is 'D', the multiple response definition also includes '"countedValue":
         countedValue'"""
-        regex = b"\$(?P<setName>\S+)=(?P<setType>[CD])\n?"
+        regex = br"\$(?P<setName>\S+)=(?P<setType>[CD])\n?"
         m = re.search(regex + b".*", mrDef, re.I | re.L)
         if not m:
             return {}
         setType = m.group("setType")
         if setType == b"C":  # multiple category sets
-            regex += b" (?P<lblLen>\d+) (?P<lblVarNames>.+) ?\n?"
+            regex += br" (?P<lblLen>\d+) (?P<lblVarNames>.+) ?\n?"
             matches = re.findall(regex, mrDef, re.I)
             setName, setType, lblLen, lblVarNames = matches[0]
         else:               # multiple dichotomy sets
             # \w+ won't always work (e.g. thai) --> \S+
-            regex += (b"(?P<valueLen>\d+) (?P<countedValue>\S+)" +
-                      b" (?P<lblLen>\d+) (?P<lblVarNames>.+) ?\n?")
+            regex += (br"(?P<valueLen>\d+) (?P<countedValue>\S+)" +
+                      br" (?P<lblLen>\d+) (?P<lblVarNames>.+) ?\n?")
             matches = re.findall(regex, mrDef, re.I | re.L)
             setName, setType, valueLen = matches[0][:3]
             countedValue, lblLen, lblVarNames = matches[0][3:]
@@ -1106,9 +1106,9 @@ class Header(Generic):
     def _getMultRespDefsEx(self, mrDef):
         """Get 'extended' multiple response defintions.
         This is a helper function for the multRespDefs getter function."""
-        regex = (b"\$(?P<setName>\w+)=(?P<setType>E) (?P<flag1>1)"
-                 b"(?P<flag2>1)? (?P<valueLen>[0-9]+) (?P<countedValue>\w+) "
-                 b"(?P<lblLen>[0-9]+) (?P<lblVarNames>[\w ]+)")
+        regex = (br"\$(?P<setName>\w+)=(?P<setType>E) (?P<flag1>1)"
+                 br"(?P<flag2>1)? (?P<valueLen>[0-9]+) (?P<countedValue>\w+) "
+                 br"(?P<lblLen>[0-9]+) (?P<lblVarNames>[\w ]+)")
         matches = re.findall(regex, mrDef, re.I | re.L)
         if not matches:
             return {}
@@ -1476,7 +1476,7 @@ class Header(Generic):
            elif isinstance(x, str):
                src_fmt, dst_fmt = src_fmt % "s", dst_mft % "s"
            else:
-               type_ = re.search("'(\w+)'", str(type(x))).group(1)
+               type_ = re.search(r"'(\w+)'", str(type(x))).group(1)
                raise TypeError("Must be str, int or float, not %s") % type_
            if src_fmt != dst_fmt:
                x = struct.unpack(dst_fmt, struct.pack(src_fmt, x))[0]

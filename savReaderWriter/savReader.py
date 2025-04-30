@@ -360,7 +360,7 @@ class SavReader(Header):
         """Helper for _get_array_slice function"""
         varNames = self.varNames[slice(cstart, cstop, cstep)]
         numVars = [v for v in varNames if self.varTypes[v] == 0 and not
-                   re.search(b"time|date|n\d+", self.formats[v], re.I)]
+                   re.search(br"time|date|n\d+", self.formats[v], re.I)]
         return [[float(item) if v in numVars else item for
                 v, item in zip(varNames, record)]for record in raw_result]
 
